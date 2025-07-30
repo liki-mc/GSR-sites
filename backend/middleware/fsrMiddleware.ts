@@ -3,7 +3,7 @@ import { isFSR } from "../services/util";
 import { FSR } from "@prisma/client";
 
 export async function fsrMiddleware(req: Request, res: Response, next: NextFunction) {
-    const fsr = req.query.fsr as string;
+    const fsr = req.params.fsr as string;
     if (!fsr) {
         res.status(400).json({ error: "FSR is required" });
         return;

@@ -15,11 +15,12 @@ async function getUser(req: Request, res: Response) {
 
 async function findUsers(req: Request, res: Response) {
     const name = req.body.name as string;
+    var users;
     if (!name) {
-        throw new BadRequestError("Search term is required");
+        users = await userService.getUsers();
     }
 
-    const users = await userService.searchUsersByName(name);
+    users = await userService.searchUsersByName(name);
     res.status(200).json(users);
 }
 

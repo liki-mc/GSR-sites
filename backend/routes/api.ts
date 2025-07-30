@@ -7,12 +7,13 @@ import { fsrMiddleware } from '../middleware/fsrMiddleware';
 import ugentCasController from '../controllers/ugentCasController';
 import userController from '../controllers/userController';
 
+import fsr_api from './fsr_api';
+
 const router = express.Router();
 
-// No FSR in params
-router.get('/ugent-cas/callback', ugentCasController.loginCallback);
+router.use('/:fsr(\\d+)', fsrMiddleware, fsr_api);
 
-router.use(fsrMiddleware);
+
 
 // Login router
 router.get('/login', (req: Request, res: Response) => {
@@ -27,13 +28,13 @@ router.get('/logout', (req: Request, res: Response) => {
 
 // UGent CAS routes
 router.get('/ugent-cas/login', ugentCasController.login);
+router.get('/ugent-cas/callback', ugentCasController.loginCallback);
 router.get('/ugent-cas/logout', isLoggedIn, ugentCasController.logout);
 
 // User routes
 router.use('/user{*splat}', isLoggedIn);
 router.get('/user/me', userController.getUser);
 router.get('/user/find', userController.findUsers);
-router.put('/user/admin', isAdmin, userController.setAdmin);
 
 router.use(errorMiddleware);
 
