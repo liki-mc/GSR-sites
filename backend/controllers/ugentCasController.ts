@@ -4,7 +4,6 @@ import userService from "../services/userService";
 
 import fetch from 'node-fetch';
 import xml2js from 'xml2js';
-import { request } from "http";
 
 const parser = new xml2js.Parser();
 
@@ -32,11 +31,6 @@ async function login(req: Request, res: Response, next: NextFunction) {
 }
 
 async function loginCallback(req: Request, res: Response, next: NextFunction) {
-    const fsr = req.query.fsr;
-    if (!fsr) {
-        throw new BadRequestError("Invalid login callback");
-    }
-
     const url = req.query.path as string || "/";
     if (req.session.userId) {
         // User is already logged in, redirect to the requested FSR
