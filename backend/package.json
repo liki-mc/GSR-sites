@@ -1,7 +1,7 @@
 {
-  "name": "botbattle-backend",
+  "name": "gsr-backend",
   "version": "1.0.0",
-  "description": "The backend code for the botbattle website",
+  "description": "The backend code for the gsr website",
   "main": "server.ts",
   "prisma.schema": "./models/schema.prisma",
   "scripts": {
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git.bitscuit.be/bitscuit/BotBattle-Website.git"
+    "url": "https://github.com/liki-mc/GSR-sites"
   },
   "author": "",
   "license": "GPL-3.0-or-later",

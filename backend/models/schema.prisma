@@ -51,3 +51,15 @@ model Page {
   @@unique([fsr, path_nl])
   @@unique([fsr, path_en])
 }
+
+model Media {
+  id       Int @id @default(autoincrement())
+
+  name     String
+  path     String @unique
+  mimeType String
+
+  deletedAt DateTime?
+  
+  fsr      FSR
+}
