@@ -25,6 +25,7 @@ CREATE TABLE "public"."Page" (
     "path_en" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "fsr" "public"."FSR" NOT NULL,
 
     CONSTRAINT "Page_pkey" PRIMARY KEY ("id")
 );
@@ -36,10 +37,10 @@ CREATE UNIQUE INDEX "User_id_key" ON "public"."User"("id");
 CREATE UNIQUE INDEX "UserAdmin_userId_fsr_key" ON "public"."UserAdmin"("userId", "fsr");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Page_path_nl_key" ON "public"."Page"("path_nl");
+CREATE UNIQUE INDEX "Page_fsr_path_nl_key" ON "public"."Page"("fsr", "path_nl");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Page_path_en_key" ON "public"."Page"("path_en");
+CREATE UNIQUE INDEX "Page_fsr_path_en_key" ON "public"."Page"("fsr", "path_en");
 
 -- AddForeignKey
 ALTER TABLE "public"."UserAdmin" ADD CONSTRAINT "UserAdmin_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

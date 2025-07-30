@@ -38,11 +38,16 @@ model Page {
   id        Int @id @default(autoincrement())
   
   title_nl  String
-  path_nl   String @unique
+  path_nl   String
 
   title_en  String
-  path_en   String @unique
+  path_en   String
+
+  fsr       FSR
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([fsr, path_nl])
+  @@unique([fsr, path_en])
 }
