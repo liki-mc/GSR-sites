@@ -1,0 +1,48 @@
+datasource db {
+  provider          = "postgresql"
+  url               = env("GSR_WEBSITE_DB_URL")
+  shadowDatabaseUrl = env("GSR_SHADOW_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum FSR {
+  GSR
+  FRIS
+  STUART
+}
+
+model User {
+  id        String  @unique
+  firstName String
+  lastName  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userAdmins UserAdmin[]
+}
+
+model UserAdmin {
+  userId     String
+  user       User   @relation(fields: [userId], references: [id])
+
+  fsr        FSR
+
+  @@unique([userId, fsr])
+}
+
+model Page {
+  id        Int @id @default(autoincrement())
+  
+  title_nl  String
+  path_nl   String @unique
+
+  title_en  String
+  path_en   String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
