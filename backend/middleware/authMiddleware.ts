@@ -23,3 +23,12 @@ export async function isAdmin(req: Request, res: Response, next: NextFunction) {
     }
     next();
 }
+
+export async function isLoggedIn(req: Request, res: Response, next: NextFunction) {
+    const userId = req.session.userId;
+    if (!userId) {
+        throw new UnauthorizedError("You must be logged in to access this resource");
+    }
+
+    next();
+}
