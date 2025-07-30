@@ -4,6 +4,7 @@ import userService from "../services/userService";
 
 import fetch from 'node-fetch';
 import xml2js from 'xml2js';
+import { request } from "http";
 
 const parser = new xml2js.Parser();
 
@@ -19,14 +20,14 @@ interface UGentUser {
     ugentStudentID: string;
 }
 
-async function requiresLogin(req: Request, res: Response, next: NextFunction) {
+async function login(req: Request, res: Response, next: NextFunction) {
     if (req.session.userId) {
         next();
     }
     else {
-        const requestingPage = req.body.path || "/";
+        const requestingPage = req?.body?.path || "/";
         const host = req.get("host");
-        res.redirect(`https://login.ugent.be?service=https://${host}/ugent-cas/callback?path=${requestingPage}`);
+        res.redirect(`https://login.ugent.be?service=https://${host}/api/ugent-cas/callback?path=${requestingPage}`);
     }
 }
 
@@ -94,7 +95,7 @@ async function logout(req: Request, res: Response, next: NextFunction) {
 }
 
 export default {
-    requiresLogin,
+    login,
     loginCallback,
     logout
 }

@@ -1,9 +1,11 @@
-import express, {Response} from "express";
+import express, { Response } from "express";
 import session from "express-session";
 import FileStoreFactory from "session-file-store";
 import morgan from "morgan";
 import helmet from "helmet";
 import util from "./util";
+
+import api from "./routes/api";
 
 // import api from "./routes/api";
 
@@ -61,7 +63,7 @@ app.use(helmet({
 
 // API stuff
 // app.use("/api", express.json({limit: "1mb"}));
-// app.use("/api", api);
+app.use("/api", api);
 
 // app.use(express.static('./static'));
 //
