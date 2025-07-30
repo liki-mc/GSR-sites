@@ -3,6 +3,7 @@ import { FSR, type Media } from '@prisma/client';
 import contentService from './contentService';
 
 import { NotFoundError } from '../middleware/errors';
+import { UploadedFile } from 'express-fileupload';
 
 interface MediaInfo {
     name: string;
@@ -26,35 +27,33 @@ async function getMedia(fsr: FSR, path: string): Promise<Media> {
     return media;
 }
 
-async function getMediaContent(fsr: FSR, path: string): Promise<string> {
+async function getMediaContent(fsr: FSR, path: string): Promise<[string, string]> {
     const media = await getMedia(fsr, path);
     const content = await contentService.getContent(`media/${media.path}`);
 
-    return content;
+    return [content, media.mimeType];
 }
 
-async function createMedia(fsr: FSR, mediaInfo: MediaInfo, content: string): Promise<Media> {
-    const { name, path, mimeType } = mediaInfo;
-    
+async function createMedia(fsr: FSR, file: UploadedFile): Promise<Media> {
     const media = await prisma.media.create({
         data: {
             fsr,
-            name,
-            path,
-            mimeType,
+            name: file.name,
+            path: file.name,
+            mimeType: file.mimetype,
         },
     });
 
     // Append the media ID to the path and update the database
-    const lastDotIndex = path.lastIndexOf('.');
-    const updatedPath = `${path.slice(0, lastDotIndex)}-${media.id}${path.slice(lastDotIndex)}`;
+    const lastDotIndex = media.path.lastIndexOf('.');
+    const updatedPath = `${media.path.slice(0, lastDotIndex)}-${media.id}${media.path.slice(lastDotIndex)}`;
     const updatedMedia = await prisma.media.update({
         where: { id: media.id },
         data: { path: updatedPath },
     });
 
     // Create an empty file for the media
-    await contentService.writeContent(`media/${updatedMedia.path}`, content);
+    await contentService.writeContentFromFile(`media/${updatedMedia.path}`, file);
 
     return updatedMedia;
 }

@@ -4,6 +4,7 @@ import FileStoreFactory from "session-file-store";
 import morgan from "morgan";
 import helmet from "helmet";
 import util from "./util";
+import fileUpload from "express-fileupload";
 
 import api from "./routes/api";
 
@@ -24,6 +25,11 @@ declare module "express-session" {
         userId: string;
     }
 }
+
+app.use(fileUpload({
+    useTempFiles : true,
+    tempFileDir : '/content/tmp/'
+}))
 
 app.use(session({
     secret: process.env.SESSION_SECRET || "Senne is mij aant uitlachen omdat ik een eendenknuffel bij me heb tijdens het programmeren.",
