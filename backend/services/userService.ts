@@ -91,10 +91,45 @@ async function getUsers(page?: number, limit?: number): Promise<User[]> {
     return users;
 }
 
+async function searchUsersByName(namePart: string): Promise<User[]> {
+    const users = await prisma.user.findMany({
+        where: {
+            OR: [
+                { firstName: { contains: namePart, mode: 'insensitive' } },
+                { lastName: { contains: namePart, mode: 'insensitive' } },
+            ],
+        },
+        orderBy: {
+            firstName: 'asc',
+        },
+    });
+
+    return users;
+}
+
+async function getAdmins(fsr: FSR): Promise<User[]> {
+    const admins = await prisma.user.findMany({
+        where: {
+            userAdmins: {
+                some: {
+                    fsr,
+                },
+            },
+        },
+        orderBy: {
+            firstName: 'asc',
+        },
+    });
+
+    return admins;
+}
+
 export default {
     getUser,
     createUser,
     setAdmin,
     isAdmin,
     getUsers,
+    searchUsersByName,
+    getAdmins,
 }
