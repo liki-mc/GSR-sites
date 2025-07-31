@@ -1,6 +1,8 @@
+import { UploadedFile } from 'express-fileupload';
 import { NotFoundError } from '../middleware/errors';
 import prisma from './prisma';
 import { type FSR } from '@prisma/client';
+import contentService from './contentService';
 
 interface FSRInfo {
     name: string;
@@ -11,7 +13,7 @@ interface FullFSRInfo extends FSRInfo {
     primaryColor: string;
     secondaryColor: string;
 
-    logoPath?: string;
+    logo?: string;
 
     uforaUrl?: string;
     facebookUrl?: string;
@@ -22,9 +24,12 @@ interface FullFSRInfo extends FSRInfo {
     githubUrl?: string;
 }
 
-async function createFsr(fsrData: FullFSRInfo): Promise<FSR> {
-    const { name, slug } = fsrData;
-
+async function createFsr(fsrData: FullFSRInfo, logo?: UploadedFile): Promise<FSR> {
+    if (logo) {
+        const logoPath = `fsr-logos/${fsrData.slug}${logo.name.slice(logo.name.lastIndexOf('.'))}`;
+        await contentService.writeContentFromFile(logoPath, logo);
+        fsrData.logo = logoPath;
+    }
     const fsr = await prisma.fSR.create({
         data: fsrData
     });

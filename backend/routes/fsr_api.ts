@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import userController from '../controllers/userController';
 import mediaController from '../controllers/mediaController';
 import pageController from '../controllers/pageController';
+import fsrController from '../controllers/fsrController';
 import { isAdmin } from '../middleware/authMiddleware';
 const router = express.Router();
 
@@ -25,5 +26,9 @@ router.post('/page', isAdmin, pageController.createPage);
 router.patch('/page/:lang(en|nl)/:path*', isAdmin, pageController.updatePage);
 router.patch('/page/content/:lang(en|nl)/:path*', isAdmin, pageController.updatePageContent);
 router.delete('/page/:lang(en|nl)/:path*', isAdmin, pageController.deletePage);
+
+// FSR routes
+router.get('/info', isAdmin, fsrController.getFsr);
+router.put('/info', isAdmin, fsrController.updateFsr);
 
 export default router
