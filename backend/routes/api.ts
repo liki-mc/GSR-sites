@@ -1,6 +1,6 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 
-import { isAdmin, isLoggedIn } from '../middleware/authMiddleware';
+import { isLoggedIn } from '../middleware/authMiddleware';
 import { errorMiddleware } from '../middleware/errorMiddleware';
 import { fsrMiddleware } from '../middleware/fsrMiddleware';
 

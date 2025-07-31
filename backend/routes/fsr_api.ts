@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express';
 import userController from '../controllers/userController';
 import mediaController from '../controllers/mediaController';
+import pageController from '../controllers/pageController';
 import { isAdmin } from '../middleware/authMiddleware';
 const router = express.Router();
 
@@ -13,5 +14,16 @@ router.get('/media/:path', mediaController.getMediaContent);
 router.get('/media/info/:path', mediaController.getMediaInfo);
 router.post('/media', mediaController.uploadMedia);
 router.delete('/media/:path', mediaController.deleteMedia);
+
+
+// Page routes
+router.get('/page/:lang(en|nl)/info/:path*', pageController.getPageInfo);
+router.get('/page/info/:path*', pageController.getPageInfoWithoutLang);
+router.get('/page/:lang(en|nl)/:path*', pageController.getPage);
+router.get('/page/:path*', pageController.getPageWithoutLang);
+router.post('/page', isAdmin, pageController.createPage);
+router.patch('/page/:lang(en|nl)/:path*', isAdmin, pageController.updatePage);
+router.patch('/page/content/:lang(en|nl)/:path*', isAdmin, pageController.updatePageContent);
+router.delete('/page/:lang(en|nl)/:path*', isAdmin, pageController.deletePage);
 
 export default router
