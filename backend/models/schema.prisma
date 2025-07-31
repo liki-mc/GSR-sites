@@ -8,10 +8,28 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum FSR {
-  GSR
-  FRIS
-  STUART
+model FSR {
+  slug      String @unique
+  name      String
+
+  primaryColor   String
+  secondaryColor String
+
+  logo          String?
+
+  // socials
+  uforaUrl     String?
+  facebookUrl  String?
+  instagramUrl String?
+  discordUrl   String?
+  linkedinUrl  String?
+  tiktokUrl    String?
+  githubUrl    String?
+
+  // References
+  pages        Page[]
+  media        Media[]
+  userAdmins   UserAdmin[]
 }
 
 model User {
@@ -29,9 +47,10 @@ model UserAdmin {
   userId     String
   user       User   @relation(fields: [userId], references: [id])
 
-  fsr        FSR
+  fsrId      String
+  fsr        FSR    @relation(fields: [fsrId], references: [slug])
 
-  @@unique([userId, fsr])
+  @@unique([userId, fsrId])
 }
 
 model Page {
@@ -43,13 +62,14 @@ model Page {
   title_en  String
   path_en   String
 
-  fsr       FSR
+  fsrId     String
+  fsr       FSR @relation(fields: [fsrId], references: [slug])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([fsr, path_nl])
-  @@unique([fsr, path_en])
+  @@unique([fsrId, path_nl])
+  @@unique([fsrId, path_en])
 }
 
 model Media {
@@ -61,5 +81,6 @@ model Media {
 
   deletedAt DateTime?
   
-  fsr      FSR
+  fsrId    String
+  fsr      FSR @relation(fields: [fsrId], references: [slug])
 }

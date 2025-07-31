@@ -1,5 +1,5 @@
 import prisma from './prisma';
-import { FSR, type Page } from '@prisma/client';
+import { type Page } from '@prisma/client';
 import contentService from './contentService';
 
 import { BadRequestError, NotFoundError } from '../middleware/errors';
@@ -10,9 +10,14 @@ interface PageInfoLanguage {
 }
 
 interface PageInfo {
-    fsr: FSR;
+    fsrSlug: string;
     en: PageInfoLanguage;
     nl: PageInfoLanguage;
+}
+
+function getPath(fsrSlug: string, lang: 'en' | 'nl', page: Page): string {
+    const path = page[`path_${lang}`];
+    return `pages/${fsrSlug}-${path}.${lang}.html`;
 }
 
 async function getPageById(pageId: number): Promise<Page> {
@@ -27,13 +32,13 @@ async function getPageById(pageId: number): Promise<Page> {
     return page;
 }
 
-async function getPageByPath(fsr: FSR, path: string, lang: 'en' | 'nl'): Promise<Page> {
+async function getPageByPath(fsrSlug: string, path: string, lang: 'en' | 'nl'): Promise<Page> {
     var page: Page | null;
     if (lang === 'en') {
         page = await prisma.page.findUnique({
             where: {
-                fsr_path_en: {
-                    fsr,
+                fsrId_path_en: {
+                    fsrId: fsrSlug,
                     path_en: path,
                 },
             },
@@ -41,8 +46,8 @@ async function getPageByPath(fsr: FSR, path: string, lang: 'en' | 'nl'): Promise
     } else if (lang === 'nl') {
         page = await prisma.page.findUnique({
             where: {
-                fsr_path_nl: {
-                    fsr,
+                fsrId_path_nl: {
+                    fsrId: fsrSlug,
                     path_nl: path,
                 },
             },
@@ -52,34 +57,34 @@ async function getPageByPath(fsr: FSR, path: string, lang: 'en' | 'nl'): Promise
     }
 
     if (!page) {
-        throw new NotFoundError(`Page with path ${lang}/${path} not found for FSR ${fsr}`);
+        throw new NotFoundError(`Page with path ${lang}/${path} not found for FSR ${fsrSlug}`);
     }
 
     return page;
 }
 
-async function getPageContent(fsr: FSR, path: string, lang: 'en' | 'nl'): Promise<string> {
-    const page = await getPageByPath(fsr, path, lang);
-    const filePath = lang === 'en' ? `pages/${fsr}-${page.path_en}.en.html` : `pages/${fsr}-${page.path_nl}.nl.html`;
+async function getPageContent(fsrSlug: string, path: string, lang: 'en' | 'nl'): Promise<string> {
+    const page = await getPageByPath(fsrSlug, path, lang);
+    const filePath = getPath(fsrSlug, lang, page);
 
     return await contentService.getContent(filePath);
 }
 
-async function updatePageContent(fsr: FSR, path: string, lang: 'en' | 'nl', content: string): Promise<void> {
+async function updatePageContent(fsrSlug: string, path: string, lang: 'en' | 'nl', content: string): Promise<void> {
     // Check if the page exists
-    const page = await getPageByPath(fsr, path, lang);
+    const page = await getPageByPath(fsrSlug, path, lang);
 
     // Write the content to the appropriate file based on the language
-    const filePath = lang === 'en' ? `pages/${fsr}-${page.path_en}.en.html` : `pages/${fsr}-${page.path_nl}.nl.html`;
+    const filePath = getPath(fsrSlug, lang, page);
     await contentService.writeContent(filePath, content);
 }
 
 async function createPage(pageInfo: PageInfo): Promise<Page> {
-    const { fsr, en, nl } = pageInfo;
+    const { fsrSlug, en, nl } = pageInfo;
 
     const page = await prisma.page.create({
         data: {
-            fsr,
+            fsrId: fsrSlug,
             path_en: en.path,
             title_en: en.title,
             path_nl: nl.path,
@@ -88,15 +93,15 @@ async function createPage(pageInfo: PageInfo): Promise<Page> {
     });
 
     // Initialize content files for the new page
-    await contentService.writeContent(`pages/${fsr}-${en.path}.en.html`, '<div></div>');
-    await contentService.writeContent(`pages/${fsr}-${nl.path}.nl.html`, '<div></div>');
+    await contentService.writeContent(getPath(fsrSlug, 'en', page), '<div></div>');
+    await contentService.writeContent(getPath(fsrSlug, 'nl', page), '<div></div>');
 
     return page;
 }
 
-async function updatePage(fsr: FSR, path: string, lang: 'nl' | 'en', pageInfo: Partial<PageInfo>): Promise<Page> {
+async function updatePage(fsrSlug: string, path: string, lang: 'nl' | 'en', pageInfo: Partial<PageInfo>): Promise<Page> {
     // Get the existing page
-    const page = await getPageByPath(fsr, path, lang);
+    const page = await getPageByPath(fsrSlug, path, lang);
 
     // Update the page in the database
     const updatedPage = await prisma.page.update({
@@ -112,28 +117,28 @@ async function updatePage(fsr: FSR, path: string, lang: 'nl' | 'en', pageInfo: P
     // Update the content files if paths have changed
     if (page.path_en !== updatedPage.path_en) {
         await contentService.renameContent(
-            `pages/${fsr}-${page.path_en}.en.html`,
-            `pages/${fsr}-${updatedPage.path_en}.en.html`
+            getPath(fsrSlug, 'en', page),
+            getPath(fsrSlug, 'en', updatedPage)
         );
     }
 
     if (page.path_nl !== updatedPage.path_nl) {
         await contentService.renameContent(
-            `pages/${fsr}-${page.path_nl}.nl.html`,
-            `pages/${fsr}-${updatedPage.path_nl}.nl.html`
+            getPath(fsrSlug, 'nl', page),
+            getPath(fsrSlug, 'nl', updatedPage)
         );
     }
 
     return updatedPage;
 }
 
-async function removePage(fsr: FSR, path: string, lang: 'en' | 'nl'): Promise<void> {
+async function removePage(fsrSlug: string, path: string, lang: 'en' | 'nl'): Promise<void> {
     // Delete the page from the database
     if (lang === 'en') {
         await prisma.page.delete({
             where: {
-                fsr_path_en: {
-                    fsr,
+                fsrId_path_en: {
+                    fsrId: fsrSlug,
                     path_en: path,
                 },
             },
@@ -141,8 +146,8 @@ async function removePage(fsr: FSR, path: string, lang: 'en' | 'nl'): Promise<vo
     } else if (lang === 'nl') {
         await prisma.page.delete({
             where: {
-                fsr_path_nl: {
-                    fsr,
+                fsrId_path_nl: {
+                    fsrId: fsrSlug,
                     path_nl: path,
                 },
             },

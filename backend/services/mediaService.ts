@@ -1,5 +1,5 @@
 import prisma from './prisma';
-import { FSR, type Media } from '@prisma/client';
+import { type Media } from '@prisma/client';
 import contentService from './contentService';
 
 import { NotFoundError } from '../middleware/errors';
@@ -11,33 +11,41 @@ interface MediaInfo {
     mimeType: string;
 }
 
-async function getMedia(fsr: FSR, path: string): Promise<Media> {
+async function getMedia(fsrSlug: string, path: string): Promise<Media> {
     const media = await prisma.media.findFirst({
         where: {
-            fsr,
+            fsrId: fsrSlug,
             path,
             deletedAt: null, // Ensure we only get non-deleted media
         },
+        include: {
+            fsr: {
+                select: {
+                    slug: true,
+                    name: true,
+                },
+            }
+        }
     });
 
     if (!media) {
-        throw new NotFoundError(`Media with path ${path} not found for FSR ${fsr}`);
+        throw new NotFoundError(`Media with path ${path} not found for FSR ${fsrSlug}.`);
     }
 
     return media;
 }
 
-async function getMediaContent(fsr: FSR, path: string): Promise<[string, string]> {
-    const media = await getMedia(fsr, path);
+async function getMediaContent(fsrSlug: string, path: string): Promise<[string, string]> {
+    const media = await getMedia(fsrSlug, path);
     const content = await contentService.getContent(`media/${media.path}`);
 
     return [content, media.mimeType];
 }
 
-async function createMedia(fsr: FSR, file: UploadedFile): Promise<Media> {
+async function createMedia(fsrSlug: string, file: UploadedFile): Promise<Media> {
     const media = await prisma.media.create({
         data: {
-            fsr,
+            fsrId: fsrSlug,
             name: file.name,
             path: file.name,
             mimeType: file.mimetype,
@@ -58,8 +66,8 @@ async function createMedia(fsr: FSR, file: UploadedFile): Promise<Media> {
     return updatedMedia;
 }
 
-async function deleteMedia(fsr: FSR, path: string): Promise<void> {
-    const media = await getMedia(fsr, path);
+async function deleteMedia(fsrSlug: string, path: string): Promise<void> {
+    const media = await getMedia(fsrSlug, path);
     
     // Delete the media file from the content directory
     await contentService.renameContent(`media/${media.path}`, `media/deleted/${media.path}`);

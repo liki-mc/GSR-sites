@@ -39,12 +39,12 @@ async function setAdmin(req: Request, res: Response) {
         throw new BadRequestError(errors.join(", "));
     }
 
-    await userService.setAdmin(userId, req.fsr!, isAdmin);
+    await userService.setAdmin(userId, req.fsr!.slug, isAdmin);
     res.status(200).json({ message: "Admin status updated successfully" });
 }
 
 async function getAdmins(req: Request, res: Response) {
-    const admins = await userService.getAdmins(req.fsr!);
+    const admins = await userService.getAdmins(req.fsr!.slug);
     res.status(200).json(admins);
 }
 

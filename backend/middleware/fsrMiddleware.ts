@@ -1,17 +1,14 @@
 import { NextFunction, Request, Response } from "express";
-import { isFSR } from "../services/util";
-import { FSR } from "@prisma/client";
+import fsrService from "../services/fsrService";
+import { type FSR } from "@prisma/client";
+import { NotFoundError } from "./errors";
 
 export async function fsrMiddleware(req: Request, res: Response, next: NextFunction) {
-    const fsr = req.params.fsr as string;
-    if (!fsr) {
-        res.status(400).json({ error: "FSR is required" });
-        return;
+    const fsrSlug = req.params.fsr as string;
+    if (!fsrSlug) {
+        throw new NotFoundError("Page not found");
     }
-    if (!isFSR(fsr)) {
-        res.status(400).json({ error: "Invalid FSR provided" });
-        return;
-    }
+    const fsr = await fsrService.getFsrBySlug(fsrSlug);
 
     // Attach FSR to request for further use
     req.fsr = fsr;
