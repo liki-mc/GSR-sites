@@ -11,7 +11,7 @@ async function getPageInfo(req: Request, res: Response) {
         throw new NotFoundError(`Language ${lang} not supported`);
     }
 
-    const page = await pageService.getPageByPath(fsr, path, lang);
+    const page = await pageService.getPageByPath(fsr.slug, path, lang);
     res.status(200).json(page);
 }
 
@@ -20,12 +20,12 @@ async function getPageInfoWithoutLang(req: Request, res: Response) {
     const path = req.params.path;
 
     try {
-        const page = await pageService.getPageByPath(fsr, path, 'en');
+        const page = await pageService.getPageByPath(fsr.slug, path, 'en');
         res.status(200).json(page);
     } catch (error) {
         if (error instanceof NotFoundError) {
             // If not found in English, try Dutch
-            const page = await pageService.getPageByPath(fsr, path, 'nl');
+            const page = await pageService.getPageByPath(fsr.slug, path, 'nl');
             res.status(200).json(page);
         } else {
             throw error;
@@ -42,7 +42,7 @@ async function getPage(req: Request, res: Response) {
         throw new BadRequestError(`Language ${lang} not supported`);
     }
 
-    const content = await pageService.getPageContent(fsr, path, lang);
+    const content = await pageService.getPageContent(fsr.slug, path, lang);
     res.status(200).header("Content-Type", "text/html").send(content);
 }
 
@@ -51,12 +51,12 @@ async function getPageWithoutLang(req: Request, res: Response) {
     const path = req.params.path;
 
     try {
-        const content = await pageService.getPageContent(fsr, path, 'en');
+        const content = await pageService.getPageContent(fsr.slug, path, 'en');
         res.status(200).header("Content-Type", "text/html").send(content);
     } catch (error) {
         if (error instanceof NotFoundError) {
             // If not found in English, try Dutch
-            const content = await pageService.getPageContent(fsr, path, 'nl');
+            const content = await pageService.getPageContent(fsr.slug, path, 'nl');
             res.status(200).header("Content-Type", "text/html").send(content);
         } else {
             throw error;
@@ -89,7 +89,7 @@ async function createPage(req: Request, res: Response) {
     }
 
     const pageInfo = {
-        fsr,
+        fsrSlug: fsr.slug,
         en: { title: title_en, path: path_en },
         nl: { title: title_nl, path: path_nl },
     };
@@ -112,7 +112,7 @@ async function updatePageContent(req: Request, res: Response) {
         throw new NotFoundError(`Language ${lang} not supported`);
     }
 
-    await pageService.updatePageContent(fsr, path, lang, content);
+    await pageService.updatePageContent(fsr.slug, path, lang, content);
     res.status(204).send();
 }
 
@@ -126,13 +126,13 @@ async function updatePage(req: Request, res: Response) {
     }
 
     const pageInfo = {
-        fsr,
+        fsr: fsr.slug,
         en: { title: req.body.title_en, path: req.body.path_en },
         nl: { title: req.body.title_nl, path: req.body.path_nl },
     }
 
 
-    const updatedPage = await pageService.updatePage(fsr, path, lang, pageInfo);
+    const updatedPage = await pageService.updatePage(fsr.slug, path, lang, pageInfo);
     res.status(200).json(updatedPage);
 }
 
@@ -145,7 +145,7 @@ async function deletePage(req: Request, res: Response) {
         throw new NotFoundError(`Language ${lang} not supported`);
     }
 
-    await pageService.removePage(fsr, path, lang);
+    await pageService.removePage(fsr.slug, path, lang);
     res.status(204).send();
 }
 

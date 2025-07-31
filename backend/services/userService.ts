@@ -1,5 +1,5 @@
 import prisma from './prisma';
-import { FSR, type User } from '@prisma/client';
+import { type User } from '@prisma/client';
 
 import { NotFoundError } from '../middleware/errors';
 
@@ -15,7 +15,12 @@ async function getUser(userId: string): Promise<User> {
         include: {
             userAdmins: {
                 select: {
-                    fsr: true
+                    fsr: {
+                        select: {
+                            slug: true,
+                            name: true,
+                        },
+                    }
                 }
             }, 
         }
@@ -42,7 +47,7 @@ async function createUser(userData: UserInfo): Promise<User> {
     return user;
 }
 
-async function setAdmin(ugentId: string, fsr: FSR, isAdmin: boolean): Promise<void> {
+async function setAdmin(ugentId: string, fsrSlug: string, isAdmin: boolean): Promise<void> {
     const user = await prisma.user.findUnique({
         where: { id: ugentId },
     });
@@ -55,24 +60,24 @@ async function setAdmin(ugentId: string, fsr: FSR, isAdmin: boolean): Promise<vo
         await prisma.userAdmin.create({
             data: {
                 userId: ugentId,
-                fsr,
+                fsrId: fsrSlug,
             },
         });
     } else {
         await prisma.userAdmin.deleteMany({
             where: {
                 userId: ugentId,
-                fsr,
+                fsrId: fsrSlug,
             },
         });
     }
 }
 
-async function isAdmin(ugentId: string, fsr: FSR): Promise<boolean> {
+async function isAdmin(ugentId: string, fsrSlug: string): Promise<boolean> {
     const userAdmin = await prisma.userAdmin.findFirst({
         where: {
             userId: ugentId,
-            fsr,
+            fsrId: fsrSlug,
         },
     });
 
@@ -107,12 +112,12 @@ async function searchUsersByName(namePart: string): Promise<User[]> {
     return users;
 }
 
-async function getAdmins(fsr: FSR): Promise<User[]> {
+async function getAdmins(fsrSlug: string): Promise<User[]> {
     const admins = await prisma.user.findMany({
         where: {
             userAdmins: {
                 some: {
-                    fsr,
+                    fsrId: fsrSlug,
                 },
             },
         },

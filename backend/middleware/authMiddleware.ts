@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import userService from "../services/userService";
-import { BadRequestError, ForbiddenError, UnauthorizedError } from "./errors";
+import { ForbiddenError, UnauthorizedError } from "./errors";
 
 export async function isAdmin(req: Request, res: Response, next: NextFunction) {
     const requestingUserId = req.session.userId;
@@ -8,7 +8,7 @@ export async function isAdmin(req: Request, res: Response, next: NextFunction) {
         throw new UnauthorizedError("You must be logged in to access this resource");
     }
 
-    const allowed = await userService.isAdmin(requestingUserId, req.fsr!);
+    const allowed = await userService.isAdmin(requestingUserId, req.fsr!.slug);
     if (!allowed) {
         throw new ForbiddenError("You are not allowed to access this resource");
     }

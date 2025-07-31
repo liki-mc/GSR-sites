@@ -6,6 +6,7 @@ import { fsrMiddleware } from '../middleware/fsrMiddleware';
 
 import ugentCasController from '../controllers/ugentCasController';
 import userController from '../controllers/userController';
+import fsrController from '../controllers/fsrController';
 
 import fsr_api from './fsr_api';
 
@@ -36,6 +37,11 @@ router.use('/user{*splat}', isLoggedIn);
 router.get('/user/me', userController.getUser);
 router.get('/user/find', userController.findUsers);
 
+// FSR routes
+router.get('/fsr', isLoggedIn, fsrController.getFsrs);
+router.post('/fsr', isLoggedIn, fsrController.createFsr);
+
+// Error middleware
 router.use(errorMiddleware);
 
 export default router;
