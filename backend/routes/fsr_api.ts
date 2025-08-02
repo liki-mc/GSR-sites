@@ -18,14 +18,14 @@ router.delete('/media/:path', mediaController.deleteMedia);
 
 
 // Page routes
-router.get('/page/:lang(en|nl)/info/:path*', pageController.getPageInfo);
-router.get('/page/info/:path*', pageController.getPageInfoWithoutLang);
-router.get('/page/:lang(en|nl)/:path*', pageController.getPage);
-router.get('/page/:path*', pageController.getPageWithoutLang);
+router.get('/page/:lang/info/:path', pageController.getPageInfo);
+router.get('/page/info/:path', pageController.getPageInfoWithoutLang);
+router.get('/page/:lang/:path', pageController.getPage);
+router.get('/page/:path', pageController.getPageWithoutLang);
 router.post('/page', isAdmin, pageController.createPage);
-router.patch('/page/:lang(en|nl)/:path*', isAdmin, pageController.updatePage);
-router.patch('/page/content/:lang(en|nl)/:path*', isAdmin, pageController.updatePageContent);
-router.delete('/page/:lang(en|nl)/:path*', isAdmin, pageController.deletePage);
+router.patch('/page/:lang/:path', isAdmin, pageController.updatePage);
+router.patch('/page/content/:lang/:path', isAdmin, pageController.updatePageContent);
+router.delete('/page/:lang/:path', isAdmin, pageController.deletePage);
 
 // FSR routes
 router.get('/info', isAdmin, fsrController.getFsr);

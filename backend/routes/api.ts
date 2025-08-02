@@ -12,7 +12,7 @@ import fsr_api from './fsr_api';
 
 const router = express.Router();
 
-router.use('/:fsr(\\d+)', fsrMiddleware, fsr_api);
+router.use('/fsr/:fsr', fsrMiddleware, fsr_api);
 
 
 
